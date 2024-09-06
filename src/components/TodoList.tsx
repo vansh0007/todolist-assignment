@@ -17,6 +17,7 @@ function TodoList({ todos, deleteTodo, toggleComplete, toggleUrgent }: TodoListP
         <ul>
             {todos.map((todo) => (
                 <TodoItem
+                    key={todo.id} // Add a unique key prop here
                     todo={todo}
                     deleteTodo={deleteTodo}
                     toggleComplete={toggleComplete}

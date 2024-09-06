@@ -13,16 +13,21 @@ function AddTodoForm({ addTodo }: AddTodoFormProps) {
     const [desc, setDesc] = useState<string>('');
 
     const handleSubmit = (event: React.FormEvent) => {
-        addTodo(title, desc);
-        setTitle('');
-        setDesc('');
+        event.preventDefault();  //Fix:  Prevent the default form submission
+        if (title.trim() && desc.trim()) { //Fix: Ensure the title and description are not empty
+            addTodo(title, desc);
+            setTitle('');
+            setDesc('');
+          }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             <div>
-                <label>Title:</label>
+                <label htmlFor="title">Title:</label> //Fix: For accessibility purposes
                 <input
+                    id="title" // Fix: For accessibility purposes
+                    value={title} //Fix: missing value prop
                     type="text"
                     placeholder="Provide a title for the new To Do"
                     onChange={(e) => setTitle(e.target.value)}
@@ -32,6 +37,7 @@ function AddTodoForm({ addTodo }: AddTodoFormProps) {
             <div>
                 <label>Description:</label>
                 <textarea
+                    id="description" // Fix: For accessibility purposes
                     value={desc}
                     placeholder="Briefly describe the To Do task"
                     onChange={(e) => setDesc(e.target.value)}

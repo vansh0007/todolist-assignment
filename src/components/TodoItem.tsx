@@ -14,24 +14,27 @@ interface TodoItemProps {
  * Each item has a title, description and 3 buttons to modify the To Do itself 
  */
 function TodoItem({ todo, deleteTodo, toggleComplete, toggleUrgent }: TodoItemProps) {
+    //Fix: Added a getClassName function to improve readability of the className logic:
+    const getClassName = () => {
+        if (todo.isCompleted) return "todo-item-complete";
+        if (todo.isUrgent) return "todo-item-urgent";
+        return "todo-item";
+      };
     return (
-        <li className={todo.isCompleted
-            ? "todo-item-complete"
-            : todo.isUrgent
-                ? "todo-item-urgent"
-                : "todo-item"
-            }
-        >
+        <li className={getClassName()}>
             <h3>{todo.title}</h3>
             <p>{todo.description}</p>
             <div className="todo-buttons">
                 <button onClick={() => toggleComplete(todo.id)}>
                     {todo.isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}
+                    aria-label={todo.isCompleted ? 'Mark as Incomplete' : 'Mark as Complete'}
                 </button>
                 <button onClick={() => toggleUrgent(todo.id)}>
                     {todo.isUrgent ? 'Mark as not Urgent' : 'Mark as Urgent'}
                 </button>
-                {todo.isCompleted && <button onClick={() => deleteTodo(todo.id)}>Delete</button>}
+                {/* Always allow the delete option */}
+                <button onClick={() => deleteTodo(todo.id)}>Delete</button>
+                aria-label={`Delete ${todo.title}`} // Fix: For accessibility purposes
             </div>
         </li>
     );

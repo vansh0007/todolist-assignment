@@ -21,34 +21,36 @@ import sampleData from "@/sampleData.json";
  * displayComplete - calls displayTodoList with a filtered To Do selection
  */
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>(sampleData);
+  const [todos, setTodos] = useState<Todo[]>(sampleData as Todo[]);
 
-  const AddTodo = (title: string, desc: string) => {
+  const addTodo = (title: string, desc: string) => {
+    // Fix: The AddTodo function is using todos.length + 1 for the new todo's id. This could potentially lead to duplicate ids if todos are deleted.
+    const maxId = Math.max(...todos.map(todo => todo.id), 0);
     const newTodo: Todo = {
-      id: todos.length + 1,
+      id: maxId + 1,
       title: title,
       description: desc,
       isCompleted: false,
       isUrgent: false,
     };
 
-    todos.push(newTodo);
-    setTodos(todos);
+    // Fix: create a new array with the new todo added
+    setTodos([...todos, newTodo]);
   };
 
   const deleteTodo = (id: number) => {
-    setTodos(todos.filter((todo) => todo.id === id));
+    // Fix: keep todos that do not match the id
+    setTodos(todos.filter((todo) => todo.id !== id));
   };
-
+    //Fix: The toggleProperty function is using direct mutation of the todo object, which is generally discouraged in React:
   const toggleProperty = useCallback((id: number, property: keyof Pick<Todo, 'isCompleted' | 'isUrgent'>) => {
-    const updatedTodos = todos.map((todo) => {
-      if (todo.id === id) {
-        todo[property] = !todo[property] as boolean;
-      }
-      return todo;
-    });
+    const updatedTodos = todos.map((todo) => 
+      todo.id === id ? { ...todo, [property]: !todo[property] } : todo
+    );
     setTodos(updatedTodos);
-  }, [setTodos]);
+ 
+    //Fix:The dependency array in useCallback for toggleProperty should include todos, not setTodos:
+  }, [todos]);
 
   const displayTodoList = (todoList:Todo[]) => {
     return (
@@ -62,13 +64,13 @@ export default function Home() {
   };
 
   const displayTodos = (displayUrgent: boolean) => {
-    return displayTodoList(todos.filter((x) => {
-      if (displayUrgent) {
-        return !x.isCompleted && x.isUrgent === displayUrgent;
-      } else {
-        return !x.isCompleted && x.isUrgent !== displayUrgent;
-      }
-    }));
+    try {
+      const filteredTodos = todos.filter((x) => !x.isCompleted && x.isUrgent === displayUrgent);
+       return displayTodoList(filteredTodos);
+    } catch (error) {
+      console.error('Error in displayTodos:', error);
+      return null; // or some fallback UI
+    }
   };
 
   const displayComplete = () => {
@@ -81,12 +83,12 @@ export default function Home() {
         <title>To Do List</title>
         <meta name="description" content="To Do List App" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="favicon.ico" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div className="Home">
         <Banner />
-        <AddTodoForm addTodo={AddTodo}/>
+        <AddTodoForm addTodo={addTodo}/>
         {displayTodos(true)}
         {displayTodos(false)}
         {displayComplete()}
